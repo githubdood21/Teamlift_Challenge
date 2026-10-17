@@ -1,0 +1,93 @@
+:root {
+  --motion-fast: 0.15s;
+  --motion-bounce: 0.44s;
+  --motion-panel: 0.24s;
+  --motion-ripple: 0.48s;
+  --motion-success: 0.42s;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #243d33;
+  background-color: #f8f8f2;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, #e4edd9 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 35%, #f2ead9 0%, transparent 55%),
+    linear-gradient(155deg, #f8f8f2 10%, #f1f5e9 65%, #f8f5ed 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100svh;
+  min-width: 360px;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+button,
+input,
+select {
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    color var(--motion-fast),
+    transform var(--motion-fast) var(--motion-ease);
+}
+:focus-visible {
+  outline: 3px solid #719e6c;
+  outline-offset: 4px;
+}
+input:focus-visible,
+select:focus-visible {
+  outline-offset: 1px;
+}
+button svg,
+.brand svg {
+  flex-shrink: 0;
+}
+a {
+  color: inherit;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+button {
+  color: inherit;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

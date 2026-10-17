@@ -1,0 +1,36 @@
+# Native Node runtime; the built React app and API share one HTTPS origin.
+# Reuse the existing database: enter its INTERNAL URL when prompted.
+services:
+  - type: web
+    name: common-time
+    runtime: node
+    plan: free
+    region: frankfurt # Change to the existing PostgreSQL database's region before creating.
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start:deploy -w backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.15.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: HOST_ADMIN_KEY
+        sync: false
+      - key: CALENDAR_TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite

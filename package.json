@@ -1,0 +1,23 @@
+{
+  "name": "teamlift-scheduler",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others -n api,web \"npm run start:dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test -w frontend && npm run test -w backend && npm run test:e2e -w backend",
+    "start": "npm run start:prod -w backend",
+    "package:release": "node scripts/package-release.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

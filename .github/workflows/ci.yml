@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: common_time_test
+          POSTGRES_USER: common_time
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U common_time -d common_time_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://common_time:ci-only-password@localhost:5432/common_time_test
+      NODE_ENV: test
+      GEMINI_API_KEY: ''
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Apply migrations to disposable CI database
+        run: npx typeorm migration:run -d backend/dist/database/data-source.js
+      - name: Verify persistence and concurrent booking protection
+        run: node --test backend/test/scheduling.integration.mjs
+      - name: Verify Calendar OAuth and availability with simulated Google
+        run: node --test backend/test/calendar.integration.mjs
+      - name: Verify saved AI confirmations with simulated Gemini
+        run: node --test backend/test/confirmation.integration.mjs
+      - name: Package compiled app without credentials
+        run: npm run package:release
+        env:
+          RELEASE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('snapshot-{0}', github.sha) }}
+      - name: Verify the archive with production dependencies only
+        run: |
+          mkdir release/smoke
+          tar -xzf release/*.tar.gz -C release/smoke
+          npm ci --omit=dev --prefix release/smoke
+          node scripts/smoke-release.mjs release/smoke
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: common-time-build
+          path: |
+            release/*.tar.gz
+            release/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 7
